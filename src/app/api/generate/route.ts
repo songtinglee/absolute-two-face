@@ -5,8 +5,8 @@ const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || "";
 
 // Style prompts
 const STYLE_PROMPTS = {
-  anime: "anime portrait, anime art style, studio ghibli inspired, detailed anime illustration, vibrant colors, high quality anime artwork",
-  cyberpunk: "cyberpunk portrait, neon lights, futuristic style, sci-fi aesthetic, glowing effects, cyberpunk 2077 inspired, detailed digital art"
+  anime: "anime portrait, anime art style, studio ghibli inspired, detailed anime illustration, vibrant colors, high quality anime artwork, 2d anime style",
+  cyberpunk: "cyberpunk portrait, neon lights, futuristic style, sci-fi aesthetic, glowing effects, cyberpunk 2077 inspired, detailed digital art, dystopian"
 };
 
 interface ReplicateResponse {
@@ -27,13 +27,15 @@ async function generateStyle(imageBase64: string, style: "anime" | "cyberpunk"):
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      version: "cfc94ff58c1c7c1c4c1e5e5e5e5e5e5e5", // InstantID model version
+      version: "03914a0c3326bf44383d0cd84b06822618af879229ce5d1d53bef38d93b68279",
       input: {
-        image: imageBase64,
+        input_image: imageBase64,
         prompt: prompt,
-        num_outputs: 1,
+        negative_prompt: "ugly, deformed, noisy, blurry, low contrast, distorted, disfigured",
         num_inference_steps: 30,
         guidance_scale: 5,
+        ip_adapter_scale: 0.8,
+        controlnet_conditioning_scale: 0.8,
       },
     }),
   });
@@ -83,7 +85,7 @@ async function generateStyle(imageBase64: string, style: "anime" | "cyberpunk"):
 
 // Demo mode: Return placeholder images when no API token
 function getDemoImage(style: "anime" | "cyberpunk", originalImage: string): string {
-  // In demo mode, return the original image with a different name
+  // In demo mode, return the original image
   // In production, this would be replaced with actual AI-generated images
   return originalImage;
 }
@@ -103,9 +105,11 @@ export async function POST(request: NextRequest) {
     let styleA: string;
     let styleB: string;
 
-    if (isDemoMode) {
+    // Enable real API when credit is available
+    const useRealAPI = true;
+    
+    if (!useRealAPI || isDemoMode) {
       // Demo mode: Return original image as placeholder
-      // This allows testing the UI without API costs
       styleA = getDemoImage("anime", image);
       styleB = getDemoImage("cyberpunk", image);
     } else {

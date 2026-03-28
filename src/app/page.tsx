@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -8,7 +8,6 @@ export default function Home() {
   const [styleA, setStyleA] = useState<string | null>(null);
   const [styleB, setStyleB] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,21 +99,20 @@ export default function Home() {
       <section className="py-8 px-4">
         <div className="max-w-4xl mx-auto">
           {!uploadedImage ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-purple-500/50 rounded-2xl p-16 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-500/5 transition-all"
-            >
-              <div className="text-6xl mb-4">📸</div>
-              <p className="text-xl mb-2">Drop your photo here or click to upload</p>
-              <p className="text-sm text-gray-500">Supports JPG, PNG, WebP (max 10MB)</p>
+            <label htmlFor="file-upload" className="block cursor-pointer">
+              <div className="border-2 border-dashed border-purple-500/50 rounded-2xl p-16 text-center hover:border-purple-400 hover:bg-purple-500/5 transition-all">
+                <div className="text-6xl mb-4">📸</div>
+                <p className="text-xl mb-2">Drop your photo here or click to upload</p>
+                <p className="text-sm text-gray-500">Supports JPG, PNG, WebP (max 10MB)</p>
+              </div>
               <input
-                ref={fileInputRef}
+                id="file-upload"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleUpload}
                 className="hidden"
               />
-            </div>
+            </label>
           ) : (
             <div className="space-y-8">
               {/* Original Image */}
