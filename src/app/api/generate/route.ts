@@ -19,7 +19,12 @@ interface ReplicateResponse {
 async function generateStyle(imageBase64: string, style: "anime" | "cyberpunk"): Promise<string> {
   const prompt = STYLE_PROMPTS[style];
   
-  // Using InstantID model for face style transfer
+  // Convert base64 to data URI format
+  const imageUri = imageBase64.startsWith("data:") 
+    ? imageBase64 
+    : `data:image/jpeg;base64,${imageBase64.split(",")[1] || imageBase64}`;
+  
+  // Use Stable Diffusion XL with img2img for style transfer
   const response = await fetch("https://api.replicate.com/v1/predictions", {
     method: "POST",
     headers: {
@@ -27,15 +32,14 @@ async function generateStyle(imageBase64: string, style: "anime" | "cyberpunk"):
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      version: "03914a0c3326bf44383d0cd84b06822618af879229ce5d1d53bef38d93b68279",
+      version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
       input: {
-        image: imageBase64,
+        image: imageUri,
         prompt: prompt,
         negative_prompt: "ugly, deformed, noisy, blurry, low contrast, distorted, disfigured",
         num_inference_steps: 30,
-        guidance_scale: 5,
-        ip_adapter_scale: 0.8,
-        controlnet_conditioning_scale: 0.8,
+        guidance_scale: 7.5,
+        strength: 0.75,
       },
     }),
   });
@@ -113,11 +117,9 @@ export async function POST(request: NextRequest) {
       styleA = getDemoImage("anime", image);
       styleB = getDemoImage("cyberpunk", image);
     } else {
-      // Production mode: Call Replicate API
-      const [animeResult, cyberpunkResult] = await Promise.all([
-        generateStyle(image, "anime"),
-        generateStyle(image, "cyberpunk"),
-      ]);
+      // Production mode: Call Replicate API sequentially to avoid rate limits
+      const animeResult = await generateStyle(image, "anime");
+      const cyberpunkResult = await generateStyle(image, "cyberpunk");
       
       styleA = animeResult;
       styleB = cyberpunkResult;
