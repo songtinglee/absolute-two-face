@@ -29,7 +29,7 @@ async function generateStyle(imageBase64: string, style: "anime" | "cyberpunk"):
     body: JSON.stringify({
       version: "03914a0c3326bf44383d0cd84b06822618af879229ce5d1d53bef38d93b68279",
       input: {
-        input_image: imageBase64,
+        image: imageBase64,
         prompt: prompt,
         negative_prompt: "ugly, deformed, noisy, blurry, low contrast, distorted, disfigured",
         num_inference_steps: 30,
