@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || "";
 
@@ -23,69 +22,13 @@ const STYLE_PROMPTS = {
 type StyleType = "anime" | "q-anime" | "cyberpunk" | "3d";
 type GenderType = "female" | "male";
 
-// 后处理：美化图片 + 加水印
+// 后处理：直接返回原始图片 URL（Edge Runtime 不支持 sharp）
 async function enhanceImage(imageUrl: string, addWatermark: boolean = true): Promise<string> {
   try {
-    console.log("Enhancing image from:", imageUrl);
-    
-    // 下载图片
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      console.log("Fetch failed, returning original URL");
-      return imageUrl;
-    }
-    
-    const buffer = await response.arrayBuffer();
-    console.log("Downloaded buffer size:", buffer.byteLength);
-    
-    if (buffer.byteLength < 1000) {
-      console.log("Buffer too small, returning original URL");
-      return imageUrl;
-    }
-    
-    // 用 Sharp 处理 - 轻度处理保持真实感
-    let pipeline = sharp(Buffer.from(buffer))
-      .modulate({
-        brightness: 0.98,
-        saturation: 1.05,
-        hue: 0,
-      })
-      .sharpen(0.5, 1, 0.3);
-    
-    // 加水印
-    if (addWatermark) {
-      const meta = await sharp(Buffer.from(buffer)).metadata();
-      const imgWidth = meta.width || 512;
-      const fontSize = Math.max(16, Math.floor(imgWidth / 25));
-      
-      // 创建水印 SVG
-      const watermarkText = "Absolute Two Face";
-      const svgWatermark = `
-        <svg width="${imgWidth}" height="${fontSize + 20}">
-          <style>
-            .watermark { 
-              fill: rgba(255,255,255,0.4); 
-              font-size: ${fontSize}px; 
-              font-family: Arial, sans-serif;
-              font-weight: bold;
-            }
-          </style>
-          <text x="${imgWidth - fontSize * watermarkText.length * 0.5 - 10}" y="${fontSize}" class="watermark">${watermarkText}</text>
-        </svg>`;
-      
-      const watermarkBuffer = Buffer.from(svgWatermark);
-      pipeline = pipeline.composite([{
-        input: watermarkBuffer,
-        gravity: 'southeast',
-      }]);
-    }
-    
-    const enhanced = await pipeline.toBuffer();
-    
-    // 转成 base64
-    const base64 = `data:image/png;base64,${enhanced.toString('base64')}`;
-    console.log("Enhancement successful, base64 length:", base64.length);
-    return base64;
+    console.log("Returning image URL:", imageUrl);
+    // Edge Runtime 限制：无法使用 sharp 进行图片处理
+    // 直接返回原始 URL
+    return imageUrl;
   } catch (error) {
     console.error("Enhance failed:", error);
     // 如果失败，返回原图 URL
