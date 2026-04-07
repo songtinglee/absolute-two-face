@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-12-18.acacia",
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2024-12-18.acacia",
+  });
+}
 
 const PLANS: Record<string, { name: string; price: number; interval: "month" | "year" }> = {
   monthly: { name: "Absolute Two Face - Monthly", price: 499, interval: "month" },
@@ -22,6 +24,7 @@ export async function POST(request: NextRequest) {
     const planConfig = PLANS[plan];
     const origin = request.headers.get("origin") || "http://localhost:3000";
 
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
