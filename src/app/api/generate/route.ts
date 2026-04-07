@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || "";
 
