@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -19,21 +19,18 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string>("");
   const [gender, setGender] = useState<"female" | "male">("female");
+  const [remainingUses, setRemainingUses] = useState(2);
 
-  // 次数限制：新用户免费 2 次
-  const getRemainingUses = (): number => {
-    if (typeof window === "undefined") return 2;
+  useEffect(() => {
     const used = parseInt(localStorage.getItem("atf_used") || "0", 10);
-    return Math.max(0, 2 - used);
-  };
+    setRemainingUses(Math.max(0, 2 - used));
+  }, []);
 
   const recordUse = () => {
-    if (typeof window === "undefined") return;
     const used = parseInt(localStorage.getItem("atf_used") || "0", 10);
     localStorage.setItem("atf_used", String(used + 1));
+    setRemainingUses(Math.max(0, 2 - used - 1));
   };
-
-  const remainingUses = typeof window !== "undefined" ? getRemainingUses() : 2;
 
   const scrollToUpload = () => {
     document.getElementById("upload-section")?.scrollIntoView({ behavior: "smooth" });
@@ -55,11 +52,11 @@ export default function Home() {
 
     setError(null);
     
-    // 检查次数
-    if (getRemainingUses() <= 0) {
-      setError("You've used all your free trials. Subscribe to unlock unlimited generations!");
-      return;
-    }
+    // 检查次数（测试阶段暂时关闭限制）
+    // if (remainingUses <= 0) {
+    //   setError("You've used all your free trials. Subscribe to unlock unlimited generations!");
+    //   return;
+    // }
     
     setIsProcessing(true);
     setStyles({ anime: null, "q-anime": null, cyberpunk: null, "3d": null });

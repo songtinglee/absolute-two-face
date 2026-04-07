@@ -18,7 +18,8 @@ const STYLE_PROMPTS = {
   }
 };
 
-type StyleType = keyof typeof STYLE_PROMPTS;
+type StyleType = "anime" | "q-anime" | "cyberpunk" | "3d";
+type GenderType = "female" | "male";
 
 // 后处理：美化图片 + 加水印
 async function enhanceImage(imageUrl: string, addWatermark: boolean = true): Promise<string> {
@@ -47,11 +48,7 @@ async function enhanceImage(imageUrl: string, addWatermark: boolean = true): Pro
         saturation: 1.05,
         hue: 0,
       })
-      .sharpen({
-        sigma: 0.5,
-        flat: 1,
-        jagged: 0.3,
-      });
+      .sharpen(0.5, 1, 0.3);
     
     // 加水印
     if (addWatermark) {
@@ -94,7 +91,7 @@ async function enhanceImage(imageUrl: string, addWatermark: boolean = true): Pro
   }
 }
 
-async function generateStyle(imageBase64: string, style: StyleType, gender: "male" | "female", addWatermark: boolean = true): Promise<string> {
+async function generateStyle(imageBase64: string, style: StyleType, gender: GenderType, addWatermark: boolean = true): Promise<string> {
   const prompt = STYLE_PROMPTS[gender][style];
   
   const startResponse = await fetch("https://api.replicate.com/v1/predictions", {
